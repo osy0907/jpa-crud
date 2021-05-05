@@ -7,11 +7,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     properties:
       hibernate:
 #        show_sql: true
         format_sql: true
+# 위에 부트가 스프링 설정없으면 기본적으로 in memory 로 돌림. (디폴트값 가지고 메모리 모드로 돌림)
 
 logging:
   level:
