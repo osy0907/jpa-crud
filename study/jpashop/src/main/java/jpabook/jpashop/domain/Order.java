@@ -1,5 +1,6 @@
 package jpabook.jpashop.domain;
 
+import jpabook.jpashop.enums.DeliveryStatus;
 import jpabook.jpashop.enums.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,8 @@ import static javax.persistence.FetchType.*;
 @Setter
 public class Order {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     @Column(name = "order_id")
     private Long id;
 
@@ -53,6 +55,36 @@ public class Order {
         delivery.setOrder(this);
     }
 
+    //== 생성 메서드 ==// 생성하는 시점을 변경해야 할 때 요 메서드만 바꾸면 되는게 포인트
+    public static Order createOrder(
+            Member member,
+            Delivery delivery,
+            OrderItem... orderItems
+    ) {
+        Order order = new Order();
+        order.setMember(member);
+        order.setDelivery(delivery);
+        for (OrderItem orderItem : orderItems) {
+            order.addOrderItem(orderItem);
+        }
+        order.setStatus(OrderStatus.ORDER);
+        order.setOrderDate(LocalDateTime.now());
+        return order;
+    }
 
+    //== 비지니스 로직 ==//
+    public void cancel() {
+        if (delivery.getStatus().equals(DeliveryStatus.COMP))
+            throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
 
+        this.setStatus(OrderStatus.CANCEL);
+        orderItems.forEach(OrderItem::cancel);
+    }
+
+    public int getTotalPrice() {
+        return orderItems
+                .stream()
+                .mapToInt(OrderItem::getTotalPrice)
+                .sum();
+    }
 }
